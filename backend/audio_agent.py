@@ -11,10 +11,10 @@ audio_agent = Agent(
 
 def run_audio_agent():
    
-    result = audio_agent.run("What is in this audio?", audio=[Audio(url=url, format="wav")], stream=True)  # Assuming this returns a RunResponse object
+    result = audio_agent.run("What is in this audio? Summarise it and give me a response", audio=[Audio(url=url, format="wav")], stream=False)  # Assuming this returns a RunResponse object
 
     # Extracting the assistant's response from the messages attribute
-    assistant_response = result
+    assistant_response = result.content
 
     return assistant_response  # Return the assistant's response
 

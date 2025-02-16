@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
-from llama_index.core.agent.workflow import AgentWorkflow
+# from llama_index.core.agent.workflow import AgentWorkflow
 from agent1 import image_agent
 from Text_agent import text_agent
 # from backend.nav_agent import nav_agent
 from video_agent import run_video_agent
 from agent1 import run_image_agent
-from Text_agent import run_text_agent
+from tex_ import run_text_agent
 from audio_agent import run_audio_agent
 
 app = Flask(__name__)
@@ -32,28 +32,35 @@ def process_input():
     if not input_type or user_input is None:
         return jsonify({"status": "error", "message": "Missing input type or user input"}), 400
 
-    # Assign the correct agent based on input type
-    if input_type == "image":
-        response = run_image_agent()
-        return response
-        # main_workflow.root_agent = image_agent
-    elif input_type == "video":
-        response = run_video_agent()
-    elif input_type == "audio":
-        response = run_audio_agent()
-        return response
-        # main_workflow.root_agent = video_agent
-    else:
-        response = run_text_agent()
-        return response
+    # Simulate dummy data for testing all input types
+    dummy_inputs = [
+        {"input_type": "image", "user_input": "dummy_image_path.jpg"},
+        {"input_type": "video", "user_input": "dummy_video_path.mp4"},
+        {"input_type": "audio", "user_input": "dummy_audio_path.mp3"},
+        {"input_type": "text", "user_input": "This is a test text input."}
+    ]
 
-   
+    results = {}
+    
+    for input_data in dummy_inputs:
+        input_type = input_data["input_type"]
+        user_input = input_data["user_input"]
 
-    try:
-        result = main_workflow.run()
-        return jsonify({"status": "success", "result": result})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        # Assign the correct agent based on input type
+        if input_type == "image":
+            response = run_image_agent()  # You may want to pass user_input if needed
+            results[input_type] = response
+        elif input_type == "video":
+            response = run_video_agent()  # You may want to pass user_input if needed
+            results[input_type] = response
+        elif input_type == "audio":
+            response = run_audio_agent()  # You may want to pass user_input if needed
+            results[input_type] = response
+        else:
+            response = run_text_agent()  # You may want to pass user_input if needed
+            results[input_type] = response
+
+    return jsonify({"status": "success", "results": results}), 200
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
