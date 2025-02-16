@@ -12,10 +12,10 @@ export default function App({ Component, pageProps }) {
   return (
     <>
       <Head>
-        <title>Stytch Next.js Example</title>
+        <title>FIXIT</title>
         <meta
           name="description"
-          content="An example Next.js application using Stytch for authentication"
+          content="An assisttant to help navigate daily struggles"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.svg" />

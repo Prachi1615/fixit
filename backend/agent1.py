@@ -71,7 +71,7 @@ image_agent = Agent(
     politely ask the user for a better quality image.
 """),
 response_model=Appliance,
-structured_outputs=True,
+# structured_outputs=True,
 )
 
     # return agent.print_response("Analyze this image", images=[Image(filepath=image_path)])
@@ -79,9 +79,11 @@ structured_outputs=True,
 def run_image_agent():
     file = capture_image()
 
-    image_path = Path(__file__).parent.joinpath("capture.jpg")
+    image_path = Path(__file__).parent.joinpath("captured_images/capture.jpg")
 
-    
     result = image_agent.run("Analyze this image", images=[Image(filepath=image_path)])
 
     return result.content
+
+response = run_image_agent()
+print(response.description)

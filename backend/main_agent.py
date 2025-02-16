@@ -3,17 +3,19 @@ from llama_index.core.agent.workflow import AgentWorkflow
 from agent1 import image_agent
 from Text_agent import text_agent
 # from backend.nav_agent import nav_agent
-from video_agent import video_agent
+from video_agent import run_video_agent
 from agent1 import run_image_agent
+from Text_agent import run_text_agent
+from audio_agent import run_audio_agent
 
 app = Flask(__name__)
 
 # Initialize agent workflow but do not trigger it yet
-main_workflow = AgentWorkflow(
-    agents=[image_agent, text_agent, video_agent],
-    root_agent=text_agent,  # Default agent
-    initial_state={"input_type": None, "status": "Waiting for input"}
-)
+# main_workflow = AgentWorkflow(
+#     agents=[image_agent, text_agent, video_agent],
+#     root_agent=text_agent,  # Default agent
+#     initial_state={"input_type": None, "status": "Waiting for input"}
+# )
 
 @app.route("/", methods=["GET"])
 def health_check():
@@ -32,19 +34,23 @@ def process_input():
 
     # Assign the correct agent based on input type
     if input_type == "image":
-        print(run_image_agent())
+        response = run_image_agent()
+        return response
         # main_workflow.root_agent = image_agent
-    # elif input_type == "audio":
-    #     main_workflow.root_agent = nav_agent
     elif input_type == "video":
-        main_workflow.root_agent = video_agent
+        response = run_video_agent()
+    elif input_type == "audio":
+        response = run_audio_agent()
+        return response
+        # main_workflow.root_agent = video_agent
     else:
-        main_workflow.root_agent = text_agent
+        response = run_text_agent()
+        return response
 
-    main_workflow.initial_state.update({"input_type": input_type, "status": "Processing"})
+   
 
     try:
-        result = main_workflow.run(user_input)
+        result = main_workflow.run()
         return jsonify({"status": "success", "result": result})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
