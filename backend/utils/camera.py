@@ -27,7 +27,7 @@ def capture_image(save_dir='captured_images'):
         
         # Generate filename with timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = os.path.join(save_dir, f'capture_{timestamp}.jpg')
+        filename = os.path.join(save_dir, f'capture.jpg')
         
         # Save image
         cv2.imwrite(filename, frame)

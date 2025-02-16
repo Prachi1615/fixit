@@ -1,5 +1,6 @@
 from typing import List, Optional
 from textwrap import dedent
+from pathlib import Path
 
 from agno.agent import Agent
 from agno.media import Image
@@ -20,7 +21,7 @@ class Appliance(BaseModel):
     warranty_status: Optional[bool] = None
     description: Optional[str] = None
 
-file = capture_image()
+# file = capture_image()
 # @weave.op()
 # def analyze_appliance_image(image_path: str) -> Appliance:
 #     agent = Agent(
@@ -74,3 +75,13 @@ structured_outputs=True,
 )
 
     # return agent.print_response("Analyze this image", images=[Image(filepath=image_path)])
+
+def run_image_agent():
+    file = capture_image()
+
+    image_path = Path(__file__).parent.joinpath("capture.jpg")
+
+    
+    result = image_agent.run("Analyze this image", images=[Image(filepath=image_path)])
+
+    return result.content

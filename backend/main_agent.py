@@ -4,6 +4,7 @@ from agent1 import image_agent
 from Text_agent import text_agent
 # from backend.nav_agent import nav_agent
 from video_agent import video_agent
+from agent1 import run_image_agent
 
 app = Flask(__name__)
 
@@ -31,7 +32,8 @@ def process_input():
 
     # Assign the correct agent based on input type
     if input_type == "image":
-        main_workflow.root_agent = image_agent
+        print(run_image_agent())
+        # main_workflow.root_agent = image_agent
     # elif input_type == "audio":
     #     main_workflow.root_agent = nav_agent
     elif input_type == "video":
