@@ -1,0 +1,54 @@
+*/.venv
+# Node.js
+node_modules/
+.npm
+.pnpm
+.yarn-integrity
+
+# Next.js
+.next/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+env/
+
+# General
+.DS_Store
+.idea/
+.vscode/
+*.log
+*.tmp
+
+# Environment variables
+.env
+.env.local
+
+# Build directories
+build/
+dist/
+
+# Dependency directories
+bower_components/
+jspm_packages/
+
+# System Files
+Thumbs.db
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Local development
+.local/
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
