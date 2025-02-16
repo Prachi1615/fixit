@@ -1,104 +1,51 @@
+from flask import Flask, request, jsonify
 from llama_index.core.agent.workflow import AgentWorkflow
-from typing import Union, Dict, Any
-from PIL import Image
-import os
-from pathlib import Path
-import io  # Add this with other imports
+from agent1 import image_agent
+from Text_agent import text_agent
+# from backend.nav_agent import nav_agent
+from video_agent import video_agent
 
-# Import your existing agents
-from agent1 import analyze_appliance_image  # Image agent
-# from backend.nav_agent import nav_agent  # Audio agent
-# from backend.Text_agent import Text_agent  # Text agent
-# from backend.video_agent import video_agent  # Video agent
+app = Flask(__name__)
 
-class InputType:
-    IMAGE = "image"
-    AUDIO = "audio"
-    TEXT = "text"
-    VIDEO = "video"
-
-def determine_input_type(user_input: Union[str, bytes, Path]) -> str:
-    """
-    Determine the type of input and return the appropriate type
-    """
-    if isinstance(user_input, str):
-        # Check if it's a file path
-        if os.path.isfile(user_input):
-            extension = os.path.splitext(user_input)[1].lower()
-            if extension in ['.png', '.jpg', '.jpeg', '.gif', '.bmp']:
-                return InputType.IMAGE
-            elif extension in ['.mp3', '.wav', '.aac']:
-                return InputType.AUDIO
-            elif extension in ['.mp4', '.avi', '.mov', '.wmv']:
-                return InputType.VIDEO
-        return InputType.TEXT
-    
-    # If input is bytes, try to determine if it's an image
-    elif isinstance(user_input, bytes):
-        try:
-            Image.open(io.BytesIO(user_input))
-            return InputType.IMAGE
-        except:
-            pass
-    
-    return InputType.TEXT
-
-# Main workflow setup
+# Initialize agent workflow but do not trigger it yet
 main_workflow = AgentWorkflow(
-    agents=[analyze_appliance_image],
-    root_agent=None,
-    initial_state={
-        "input_type": None,
-        "status": "Waiting for input"
-    }
+    agents=[image_agent, text_agent, video_agent],
+    root_agent=text_agent,  # Default agent
+    initial_state={"input_type": None, "status": "Waiting for input"}
 )
 
-def route_to_agent(user_input: Union[str, bytes, Path]) -> Dict[str, Any]:
-    """
-    Route the input to the appropriate agent based on input type
-    """
-    input_type = determine_input_type(user_input)
-    
-    # Set the appropriate root agent based on input type
-    if input_type == InputType.IMAGE:
-        main_workflow.root_agent = agent1.name
-    elif input_type == InputType.AUDIO:
-        main_workflow.root_agent = nav_agent.name
-    elif input_type == InputType.VIDEO:
-        main_workflow.root_agent = video_agent.name
+@app.route("/", methods=["GET"])
+def health_check():
+    """Simple health check to confirm API is running."""
+    return jsonify({"status": "API is running"}), 200
+
+@app.route("/process_input", methods=["POST"])
+def process_input():
+    """API waits for input from UI and triggers agents only when necessary."""
+    data = request.json
+    input_type = data.get("input_type")
+    user_input = data.get("user_input")  # Could be text, file path, or encoded data
+
+    if not input_type or user_input is None:
+        return jsonify({"status": "error", "message": "Missing input type or user input"}), 400
+
+    # Assign the correct agent based on input type
+    if input_type == "image":
+        main_workflow.root_agent = image_agent
+    # elif input_type == "audio":
+    #     main_workflow.root_agent = nav_agent
+    elif input_type == "video":
+        main_workflow.root_agent = video_agent
     else:
-        main_workflow.root_agent = Text_agent.name
-    
-    # Update workflow state
-    main_workflow.initial_state.update({
-        "input_type": input_type,
-        "status": "Processing"
-    })
-    
+        main_workflow.root_agent = text_agent
+
+    main_workflow.initial_state.update({"input_type": input_type, "status": "Processing"})
+
     try:
         result = main_workflow.run(user_input)
-        return {
-            "status": "success",
-            "result": result,
-            "input_type": input_type
-        }
+        return jsonify({"status": "success", "result": result})
     except Exception as e:
-        return {
-            "status": "error",
-            "error": str(e),
-            "input_type": input_type
-        }
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-# Example usage
 if __name__ == "__main__":
-    # For text input
-    text_result = route_to_agent("How can you help me?")
-    
-    # For image input (assuming it's a file path)
-    image_result = route_to_agent("path/to/image.jpg")
-    
-    # For audio input
-    audio_result = route_to_agent("path/to/audio.mp3")
-    
-    # For video input
-    video_result = route_to_agent("path/to/video.mp4")
+    app.run(debug=True, host="0.0.0.0", port=5000)

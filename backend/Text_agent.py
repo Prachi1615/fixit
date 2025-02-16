@@ -11,7 +11,7 @@ class ApplianceDetails(BaseModel):
     serial_number: Optional[str] = None
     last_service_date: Optional[str] = None
 
-agent = Agent(
+text_agent = Agent(
     model=OpenAIChat(id="gpt-4o"),
     instructions="""\
     Your task is to interact with the user to collect detailed information about their appliance issue. Please ask the following questions in order and wait for the user's response after each question:

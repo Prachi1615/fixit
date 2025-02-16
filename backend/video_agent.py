@@ -1,37 +1,76 @@
-from pathlib import Path
+from typing import List, Optional
+from textwrap import dedent
 
-from agno.agent import Agent, RunResponse
+from agno.agent import Agent
 from agno.media import Image
 from agno.models.openai import OpenAIChat
-from agno.utils.audio import write_audio_to_file
-from rich import print
-from rich.text import Text
+from agno.tools.duckduckgo import DuckDuckGoTools
+from pydantic import BaseModel
+from utils.camera import capture_image
+import weave
+weave.init('fixit')
 
+class Appliance(BaseModel):
+    name: Optional[str] = None
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    year: Optional[int] = None
+    serial_number: Optional[str] = None
+    condition: Optional[str] = None
+    warranty_status: Optional[bool] = None
+    description: Optional[str] = None
 
-image_agent = Agent(model=OpenAIChat(id="gpt-4o"))
+file = capture_image()
+# @weave.op()
+# def analyze_appliance_image(image_path: str) -> Appliance:
+#     agent = Agent(
+#         model=OpenAIChat(id="gpt-4o"),
+#         tools=[DuckDuckGoTools()],
+#         instructions=dedent("""\
+#             You are an expert at analyzing appliances. Your task is to:
+#             1. Extract all available information about the appliance from the image
+#             2. If any required fields (name, brand, model, price) are missing or unclear:
+#            - Ask the user specific questions to obtain the missing information
+#            - Explain why you need this information
+#         3. For optional fields, ask if the user has additional information about:
+#            - Year of manufacture
+#            - Serial number
+#            - Condition
+#            - Warranty status
+#         4. Verify the information with the user before finalizing
 
-image_path = Path(__file__).parent.joinpath("sample.jpg")
-image_story: RunResponse = image_agent.run(
-    "Write a 3 sentence fiction story about the image",
-    images=[Image(filepath=image_path)],
+#         Always maintain a professional and helpful tone. If the image is unclear or unreadable,
+#         politely ask the user for a better quality image.
+#     """),
+#     response_model=Appliance,
+#     structured_outputs=True,
+# )
+
+#     return agent.print_response("Analyze this image", images=[Image(filepath=image_path)])
+
+# print(analyze_appliance_image(file['filename']))
+
+video_agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[DuckDuckGoTools()],
+    instructions=dedent("""\
+        You are an expert at analyzing appliances. Your task is to:
+        1. Extract all available information about the appliance from the image
+        2. If any required fields (name, brand, model, price) are missing or unclear:
+        - Ask the user specific questions to obtain the missing information
+        - Explain why you need this information
+    3. For optional fields, ask if the user has additional information about:
+        - Year of manufacture
+        - Serial number
+        - Condition
+        - Warranty status
+    4. Verify the information with the user before finalizing
+
+    Always maintain a professional and helpful tone. If the image is unclear or unreadable,
+    politely ask the user for a better quality image.
+"""),
+response_model=Appliance,
+structured_outputs=True,
 )
-formatted_text = Text.from_markup(
-    f":sparkles: [bold magenta]Story:[/bold magenta] {image_story.content} :sparkles:"
-)
-print(formatted_text)
 
-audio_agent = Agent(
-    model=OpenAIChat(
-        id="gpt-4o-audio-preview",
-        modalities=["text", "audio"],
-        audio={"voice": "alloy", "format": "wav"},
-    ),
-)
-
-audio_story: RunResponse = audio_agent.run(
-    f"Narrate the story with flair: {image_story.content}"
-)
-if audio_story.response_audio is not None:
-    write_audio_to_file(
-        audio=audio_story.response_audio.content, filename="tmp/sample_story.wav"
-    )
+    # return agent.print_response("Analyze this image", images=[Image(filepath=image_path)])
